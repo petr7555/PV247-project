@@ -6,11 +6,11 @@ module.exports = {
     assert: {
       preset: 'lighthouse:recommended',
       assertions: {
-        'csp-xss': 'off',
-        'errors-in-console': 'off',
-        'non-composited-animations': 'off',
-        'tap-targets': 'off',
-        'unused-javascript': 'off',
+        'csp-xss': 'warn',
+        'errors-in-console': 'warn',
+        'non-composited-animations': 'warn',
+        'tap-targets': 'warn',
+        'unused-javascript': 'warn',
       },
     },
   },
