@@ -14,6 +14,7 @@ import generationsAreEqual from '../utils/generationsAreEqual';
 import CycleAlert from '../components/CycleAlert';
 import ApiErrorSnackbar from '../components/ApiErrorSnackbar';
 import useLoggedInUser from '../hooks/useLoggedInUser';
+import useError from '../hooks/useError';
 
 const INITIAL_SIMULATION_DELAY = 100;
 
@@ -25,6 +26,7 @@ const Board: FC = () => {
   usePageTitle('Play');
   const windowWidth = useWindowWidth();
   const user = useLoggedInUser();
+  const [, setError] = useError();
 
   const { configId } = useParams();
   const [searchParams] = useSearchParams();
@@ -37,11 +39,13 @@ const Board: FC = () => {
       setConfigurationLoading(true);
       getConfigurationById(configId, searchParams.get('private') === 'true', user).then(({ config, errorMsg }) => {
         setConfiguration(config);
-        setErrorMsg(errorMsg);
         setConfigurationLoading(false);
+        if (errorMsg) {
+          setError(errorMsg);
+        }
       });
     }
-  }, [configId, searchParams, user]);
+  }, [configId, searchParams, setError, user]);
 
   const [generations, setGenerations] = useState([configuration.initialGeneration]);
 
@@ -111,12 +115,6 @@ const Board: FC = () => {
     setDetectedCycle(false);
   };
 
-  const [errorMsg, setErrorMsg] = useState<string>();
-
-  const closeApiErrorSnackbar = () => {
-    setErrorMsg(undefined);
-  };
-
   if (configurationLoading) {
     return (
       <Container
@@ -132,7 +130,7 @@ const Board: FC = () => {
       <Social generations={generations} boardSize={boardSize} />
 
       <CycleAlert detectedCycle={detectedCycle} closeCycleSnackbar={closeCycleSnackbar} />
-      <ApiErrorSnackbar errorMsg={errorMsg} closeApiErrorSnackbar={closeApiErrorSnackbar} />
+      <ApiErrorSnackbar />
 
       <Canvas
         generation={generations[generations.length - 1]}

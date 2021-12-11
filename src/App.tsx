@@ -4,17 +4,20 @@ import { UserProvider } from './hooks/useLoggedInUser';
 import theme from './utils/theme';
 import RoutesSwitch from './components/RoutesSwitch';
 import Layout from './components/Layout';
+import { ErrorProvider } from './hooks/useError';
 
 const App = () => {
   return (
     <UserProvider>
       <ThemeProvider theme={theme}>
-        <BrowserRouter>
-          <CssBaseline />
-          <Layout>
-            <RoutesSwitch />
-          </Layout>
-        </BrowserRouter>
+        <ErrorProvider>
+          <BrowserRouter>
+            <CssBaseline />
+            <Layout>
+              <RoutesSwitch />
+            </Layout>
+          </BrowserRouter>
+        </ErrorProvider>
       </ThemeProvider>
     </UserProvider>
   );

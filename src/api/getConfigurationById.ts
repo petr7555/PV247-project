@@ -2,6 +2,7 @@ import { configurationDocument, usersConfigurationDocument } from '../utils/fire
 import { Configuration } from '../models/Configuration';
 import { getDoc } from 'firebase/firestore';
 import { User } from 'firebase/auth';
+import getErrorMessage from '../utils/getErrorMsg';
 
 export const DEFAULT_CONFIGURATION: Configuration = {
   boardSize: 20,
@@ -24,7 +25,7 @@ const getConfigurationById = async (configId: string, isPrivate: boolean, user: 
 
     if (isPrivate) {
       if (!user) {
-        return { config: DEFAULT_CONFIGURATION, errorMsg: `You must be logged in to view this configuration.` };
+        return { config: DEFAULT_CONFIGURATION, errorMsg: 'You must be logged in to view this configuration.' };
       }
       doc = usersConfigurationDocument(user.uid, configId);
     } else {
@@ -46,7 +47,7 @@ const getConfigurationById = async (configId: string, isPrivate: boolean, user: 
   } catch (err) {
     return {
       config: DEFAULT_CONFIGURATION,
-      errorMsg: (err as { message?: string })?.message ?? 'An unknown error has occurred.',
+      errorMsg: getErrorMessage(err),
     };
   }
 };

@@ -4,6 +4,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { logIn } from '../utils/firebase';
 import { useNavigate } from 'react-router-dom';
 import usePageTitle from '../hooks/usePageTitle';
+import getErrorMessage from '../utils/getErrorMsg';
 
 const Login: FC = () => {
   usePageTitle('Login');
@@ -19,7 +20,7 @@ const Login: FC = () => {
           await logIn();
           navigate('/');
         } catch (err) {
-          setSubmitError((err as { message?: string })?.message ?? 'An unknown error has occurred.');
+          setSubmitError(getErrorMessage(err));
         }
       }}
       sx={{

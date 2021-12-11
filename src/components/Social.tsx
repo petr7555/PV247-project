@@ -26,6 +26,7 @@ import Canvas from './Canvas';
 import addConfigurationToUser from '../api/addConfigurationToUser';
 import Generation from '../models/Generation';
 import getShareableLink from '../api/getShareableLink';
+import useError from '../hooks/useError';
 
 const defaultConfigName = getUniqueName();
 
@@ -40,6 +41,7 @@ const WHOLE_SIMULATION = 'WHOLE_SIMULATION';
 const Social: FC<Props> = ({ generations, boardSize }) => {
   const isOffline = useOfflineStatus();
   const user = useLoggedInUser();
+  const [, setError] = useError();
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [saveDialogIsOpen, setSaveDialogOpen] = useState(false);
@@ -63,10 +65,10 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
 
   const handleSubmit = async ({ configName, saveType }: { configName: string; saveType: string }) => {
     setSaveDialogOpen(false);
-    if (saveType === CURRENT_GENERATION) {
-      await addConfigurationToUser(getCurrentGeneration(), boardSize, user, configName);
-    } else {
-      await addConfigurationToUser(getFirstGeneration(), boardSize, user, configName);
+    const generation = saveType === CURRENT_GENERATION ? getCurrentGeneration() : getFirstGeneration();
+    const { errorMsg } = await addConfigurationToUser(generation, boardSize, user, configName);
+    if (errorMsg) {
+      setError(errorMsg);
     }
   };
 
