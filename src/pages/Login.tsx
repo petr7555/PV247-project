@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Typography } from '@mui/material';
+import { Box, Button, Paper, Stack, Typography } from '@mui/material';
 import { FC, FormEvent, useState } from 'react';
 import GoogleIcon from '@mui/icons-material/Google';
 import { logIn } from '../utils/firebase';
@@ -34,16 +34,16 @@ const Login: FC = () => {
       <Typography variant="h4" component="h1" textAlign="center">
         Log in
       </Typography>
-      <Box>
+      <Stack gap={1}>
+        <Button type="submit" variant="contained" startIcon={<GoogleIcon />}>
+          Sign in with Google
+        </Button>
         {submitError && (
           <Typography variant="caption" textAlign="right" sx={{ color: 'error.main' }}>
             {submitError}
           </Typography>
         )}
-        <Button type="submit" variant="contained" startIcon={<GoogleIcon />}>
-          Sign in with Google
-        </Button>
-      </Box>
+      </Stack>
     </Paper>
   );
 };

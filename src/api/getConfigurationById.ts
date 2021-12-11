@@ -32,10 +32,10 @@ const getConfigurationById = async (id: string) => {
     } else {
       return { config: DEFAULT_CONFIGURATION, errorMsg: `Configuration with ID ${id} does not exist.` };
     }
-  } catch (e) {
+  } catch (err) {
     return {
       config: DEFAULT_CONFIGURATION,
-      errorMsg: (e as { message?: string })?.message ?? 'An unknown error has occurred.',
+      errorMsg: (err as { message?: string })?.message ?? 'An unknown error has occurred.',
     };
   }
 };

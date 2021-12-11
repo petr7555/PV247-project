@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { collection, CollectionReference, doc, DocumentReference, getFirestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, User } from 'firebase/auth';
 import { StoredConfiguration } from '../models/Configuration';
+import { StoredUser } from '../models/User';
 
 // Initialize Firebase
 initializeApp({
@@ -31,6 +32,9 @@ const db = getFirestore();
 
 // Collections
 export const configurationsCollection = collection(db, 'configurations') as CollectionReference<StoredConfiguration>;
-
 export const configurationDocument = (id: string) =>
   doc(db, 'configurations', id) as DocumentReference<StoredConfiguration>;
+
+export const usersConfigurationsCollection = (id: string) =>
+  collection(db, `users/${id}/configurations`) as CollectionReference<StoredConfiguration>;
+export const userDocument = (id: string) => doc(db, 'users', id) as DocumentReference<StoredConfiguration>;

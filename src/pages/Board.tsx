@@ -5,7 +5,6 @@ import Canvas from '../components/Canvas';
 import useInterval from '../hooks/useInterval';
 import Generation from '../models/Generation';
 import getShareableLink from '../api/getShareableLink';
-import saveGeneration from '../api/saveGeneration';
 import ControlPanel from '../components/ControlPanel';
 import Social from '../components/Social';
 import useLoggedInUser from '../hooks/useLoggedInUser';
@@ -16,6 +15,7 @@ import useWindowWidth from '../utils/useWindowWidth';
 import generationsAreEqual from '../utils/generationsAreEqual';
 import CycleAlert from '../components/CycleAlert';
 import ApiErrorSnackbar from '../components/ApiErrorSnackbar';
+import addConfigurationToUser from '../api/addConfigurationToUser';
 
 const INITIAL_SIMULATION_DELAY = 100;
 
@@ -107,12 +107,12 @@ const Board: FC = () => {
 
   // TODO
   const saveCurrentGeneration = async (configName: string) => {
-    saveGeneration(generations.slice(-1)[0], configName);
+    await addConfigurationToUser(generations.slice(-1)[0], boardSize, user, configName);
   };
 
   // TODO
   const saveSimulation = async (configName: string) => {
-    saveGeneration(generations[0], configName);
+    await addConfigurationToUser(generations[0], boardSize, user, configName);
   };
 
   useEffect(() => {

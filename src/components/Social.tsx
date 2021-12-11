@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Snackbar,
   Stack,
+  Tooltip,
 } from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import SaveIcon from '@mui/icons-material/Save';
@@ -18,6 +19,7 @@ import RequiredTextInput from './RequiredTextInput';
 import { Radios } from 'mui-rff';
 import useOfflineStatus from '../hooks/useOfflineStatus';
 import OfflineTooltip from './OfflineTooltip';
+import useLoggedInUser from '../hooks/useLoggedInUser';
 
 const defaultConfigName = getUniqueName();
 
@@ -29,6 +31,7 @@ type Props = {
 
 const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation }) => {
   const isOffline = useOfflineStatus();
+  const user = useLoggedInUser();
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [saveDialogIsOpen, setSaveDialogOpen] = useState(false);
@@ -56,6 +59,16 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
 
   const closeSnackbar = () => setSnackbarOpen(false);
   const closeSaveDialog = () => setSaveDialogOpen(false);
+
+  type SaveButtonProps = {
+    disabled?: boolean;
+  };
+
+  const SaveButton: FC<SaveButtonProps> = ({ disabled }) => (
+    <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={isOffline || disabled}>
+      Save
+    </Button>
+  );
 
   return (
     <>
@@ -122,10 +135,17 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
             Share
           </Button>
         </OfflineTooltip>
+
         <OfflineTooltip>
-          <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={isOffline}>
-            Save
-          </Button>
+          {user ? (
+            <SaveButton />
+          ) : (
+            <Tooltip title="Log in to be able to save configurations.">
+              <span>
+                <SaveButton disabled />
+              </span>
+            </Tooltip>
+          )}
         </OfflineTooltip>
       </Stack>
     </>
