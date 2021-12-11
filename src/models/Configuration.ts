@@ -1,4 +1,5 @@
 import Generation from './Generation';
+import { Timestamp } from '@firebase/firestore';
 
 export type Configuration = {
   boardSize: number;
@@ -8,7 +9,7 @@ export type Configuration = {
 export type StoredConfiguration = {
   name: string;
   authorName: string;
-  createdAt: Date;
+  createdAt: Timestamp;
   boardSize: number;
   initialGeneration: string;
 };
@@ -25,7 +26,7 @@ export type ParsedConfiguration = {
 export type ConfigurationInput = {
   name: string;
   authorName: string;
-  createdAt: Date;
+  createdAt: Timestamp;
   boardSize: number;
   initialGeneration: string;
 };

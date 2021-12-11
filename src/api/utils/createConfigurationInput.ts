@@ -3,6 +3,7 @@ import getUniqueName from '../../utils/getUniqueName';
 import getAuthorName from './getAuthorName';
 import Generation from '../../models/Generation';
 import { User } from 'firebase/auth';
+import { Timestamp } from '@firebase/firestore';
 
 const createConfigurationInput = (
   generation: Generation,
@@ -12,7 +13,7 @@ const createConfigurationInput = (
 ): ConfigurationInput => ({
   name: configName ?? getUniqueName(),
   authorName: getAuthorName(user),
-  createdAt: new Date(),
+  createdAt: Timestamp.now(),
   boardSize,
   initialGeneration: JSON.stringify(generation),
 });

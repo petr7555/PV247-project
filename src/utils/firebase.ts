@@ -30,7 +30,10 @@ export const onAuthChanged = (callback: (u: User | null) => void) => onAuthState
 const db = getFirestore();
 
 // Collections
-export const configurationsCollection = collection(db, 'configurations') as CollectionReference<StoredConfiguration>;
+export const sharedConfigurationsCollection = collection(
+  db,
+  'configurations',
+) as CollectionReference<StoredConfiguration>;
 export const configurationDocument = (id: string) =>
   doc(db, 'configurations', id) as DocumentReference<StoredConfiguration>;
 

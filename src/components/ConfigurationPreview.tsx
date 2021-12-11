@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { Box, Card, CardActionArea, CardContent, Typography } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Canvas from './Canvas';
 import { ParsedConfiguration } from '../models/Configuration';
 
@@ -22,13 +22,14 @@ const ConfigurationPreview: FC<Props> = ({ configuration }) => {
         sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 2 }}
       >
         <Canvas generation={configuration.initialGeneration} boardSize={configuration.boardSize} canvasWidth={250} />
-        <Box>
+        <Box sx={{ alignSelf: 'flex-start' }}>
           <CardContent>
-            <Typography component="div" variant="h5">
-              {configuration.name}
+            <Typography variant="h5">{configuration.name}</Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+              {configuration.createdAt.toLocaleString()}
             </Typography>
-            <Typography variant="subtitle1" color="text.secondary" component="div">
-              {configuration.authorName}
+            <Typography variant="subtitle2" color="text.secondary">
+              By: {configuration.authorName}
             </Typography>
           </CardContent>
         </Box>
