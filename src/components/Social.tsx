@@ -81,16 +81,6 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
 
   const radioButtonsInRow = useMediaQuery('(min-width:768px)');
 
-  type SaveButtonProps = {
-    disabled?: boolean;
-  };
-
-  const SaveButton: FC<SaveButtonProps> = ({ disabled }) => (
-    <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={isOffline || disabled}>
-      Save
-    </Button>
-  );
-
   return (
     <>
       <Snackbar
@@ -169,11 +159,15 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
 
         <OfflineTooltip>
           {user ? (
-            <SaveButton />
+            <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={isOffline}>
+              Save
+            </Button>
           ) : (
             <Tooltip title="Log in to be able to save configurations.">
               <span>
-                <SaveButton disabled />
+                <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={true}>
+                  Save
+                </Button>
               </span>
             </Tooltip>
           )}
