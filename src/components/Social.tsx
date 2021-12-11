@@ -10,6 +10,8 @@ import {
   Snackbar,
   Stack,
   Tooltip,
+  Typography,
+  useMediaQuery,
 } from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import SaveIcon from '@mui/icons-material/Save';
@@ -20,16 +22,19 @@ import { Radios } from 'mui-rff';
 import useOfflineStatus from '../hooks/useOfflineStatus';
 import OfflineTooltip from './OfflineTooltip';
 import useLoggedInUser from '../hooks/useLoggedInUser';
+import Canvas from './Canvas';
+import addConfigurationToUser from '../api/addConfigurationToUser';
+import Generation from '../models/Generation';
+import getShareableLink from '../api/getShareableLink';
 
 const defaultConfigName = getUniqueName();
 
 type Props = {
-  onShare: () => Promise<void>;
-  onSaveCurrentGeneration: (configName: string) => Promise<void>;
-  onSaveSimulation: (configName: string) => Promise<void>;
+  generations: Generation[];
+  boardSize: number;
 };
 
-const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation }) => {
+const Social: FC<Props> = ({ generations, boardSize }) => {
   const isOffline = useOfflineStatus();
   const user = useLoggedInUser();
 
@@ -39,7 +44,8 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
 
   const handleShare = async () => {
     setGeneratingShareLink(true);
-    await onShare();
+    const link = await getShareableLink(generations[0], boardSize, user);
+    await navigator.clipboard.writeText(link);
     setSnackbarOpen(true);
     setGeneratingShareLink(false);
   };
@@ -48,17 +54,23 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
     setSaveDialogOpen(true);
   };
 
+  const getCurrentGeneration = () => generations.slice(-1)[0];
+
+  const getFirstGeneration = () => generations[0];
+
   const handleSubmit = async ({ configName, saveType }: { configName: string; saveType: string }) => {
     setSaveDialogOpen(false);
     if (saveType === 'currentGeneration') {
-      await onSaveCurrentGeneration(configName);
+      await addConfigurationToUser(getCurrentGeneration(), boardSize, user, configName);
     } else {
-      await onSaveSimulation(configName);
+      await addConfigurationToUser(getFirstGeneration(), boardSize, user, configName);
     }
   };
 
   const closeSnackbar = () => setSnackbarOpen(false);
   const closeSaveDialog = () => setSaveDialogOpen(false);
+
+  const radioButtonsInRow = useMediaQuery('(min-width:768px)');
 
   type SaveButtonProps = {
     disabled?: boolean;
@@ -90,7 +102,7 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
           saveType: 'currentGeneration',
         }}
         onSubmit={handleSubmit}
-        render={({ handleSubmit }) => (
+        render={({ handleSubmit, form }) => (
           <Dialog open={saveDialogIsOpen} onClose={closeSaveDialog}>
             <DialogTitle>Save</DialogTitle>
             <DialogContent
@@ -98,7 +110,6 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
-                minWidth: 500,
               }}
             >
               <RequiredTextInput id="configName" label="Configuration name" sx={{ marginTop: 1 }} />
@@ -110,7 +121,18 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
                   { value: 'currentGeneration', label: 'Current generation' },
                   { value: 'wholeSimulation', label: 'Whole simulation' },
                 ]}
-                radioGroupProps={{ row: true, ['aria-label']: 'save type' }}
+                radioGroupProps={{ row: radioButtonsInRow, ['aria-label']: 'save type' }}
+              />
+
+              <Typography component="h3">Preview:</Typography>
+              <Canvas
+                generation={
+                  form.getFieldState('saveType')?.value === 'currentGeneration'
+                    ? getCurrentGeneration()
+                    : getFirstGeneration()
+                }
+                boardSize={boardSize}
+                canvasWidth={250}
               />
             </DialogContent>
 

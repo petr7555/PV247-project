@@ -4,10 +4,8 @@ import usePageTitle from '../hooks/usePageTitle';
 import Canvas from '../components/Canvas';
 import useInterval from '../hooks/useInterval';
 import Generation from '../models/Generation';
-import getShareableLink from '../api/getShareableLink';
 import ControlPanel from '../components/ControlPanel';
 import Social from '../components/Social';
-import useLoggedInUser from '../hooks/useLoggedInUser';
 import { useParams } from 'react-router-dom';
 import getConfigurationById, { DEFAULT_CONFIGURATION } from '../api/getConfigurationById';
 import { CircularProgress, Container } from '@mui/material';
@@ -15,7 +13,6 @@ import useWindowWidth from '../utils/useWindowWidth';
 import generationsAreEqual from '../utils/generationsAreEqual';
 import CycleAlert from '../components/CycleAlert';
 import ApiErrorSnackbar from '../components/ApiErrorSnackbar';
-import addConfigurationToUser from '../api/addConfigurationToUser';
 
 const INITIAL_SIMULATION_DELAY = 100;
 
@@ -26,8 +23,6 @@ const getCurrentGenerationCoordinateSet = (generations: Generation[]) => {
 const Board: FC = () => {
   usePageTitle('Play');
   const windowWidth = useWindowWidth();
-
-  const user = useLoggedInUser();
 
   const { configId } = useParams();
 
@@ -100,21 +95,6 @@ const Board: FC = () => {
 
   const [boardSize, setBoardSize] = useState(configuration.boardSize);
 
-  const share = async () => {
-    const link = await getShareableLink(generations[0], boardSize, user);
-    await navigator.clipboard.writeText(link);
-  };
-
-  // TODO
-  const saveCurrentGeneration = async (configName: string) => {
-    await addConfigurationToUser(generations.slice(-1)[0], boardSize, user, configName);
-  };
-
-  // TODO
-  const saveSimulation = async (configName: string) => {
-    await addConfigurationToUser(generations[0], boardSize, user, configName);
-  };
-
   useEffect(() => {
     const lastGeneration = generations.slice(-1)[0];
     const prevGenerations = generations.slice(0, -1);
@@ -146,7 +126,7 @@ const Board: FC = () => {
 
   return (
     <Container sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-      <Social onShare={share} onSaveCurrentGeneration={saveCurrentGeneration} onSaveSimulation={saveSimulation} />
+      <Social generations={generations} boardSize={boardSize} />
 
       <CycleAlert detectedCycle={detectedCycle} closeCycleSnackbar={closeCycleSnackbar} />
       <ApiErrorSnackbar errorMsg={errorMsg} closeApiErrorSnackbar={closeApiErrorSnackbar} />
