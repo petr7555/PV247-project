@@ -49,9 +49,13 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
 
   const handleShare = async () => {
     setGeneratingShareLink(true);
-    const link = await getShareableLink(generations[0], boardSize, user);
-    await navigator.clipboard.writeText(link);
-    setSnackbarOpen(true);
+    const { link, errorMsg } = await getShareableLink(generations[0], boardSize, user);
+    if (errorMsg) {
+      setError(errorMsg);
+    } else if (link) {
+      await navigator.clipboard.writeText(link);
+      setSnackbarOpen(true);
+    }
     setGeneratingShareLink(false);
   };
 
