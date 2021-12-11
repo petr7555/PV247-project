@@ -15,6 +15,7 @@ import { CircularProgress, Container } from '@mui/material';
 import useWindowWidth from '../utils/useWindowWidth';
 import generationsAreEqual from '../utils/generationsAreEqual';
 import CycleAlert from '../components/CycleAlert';
+import ApiErrorSnackbar from '../components/ApiErrorSnackbar';
 
 const INITIAL_SIMULATION_DELAY = 100;
 
@@ -36,8 +37,9 @@ const Board: FC = () => {
   useEffect(() => {
     if (configId) {
       setConfigurationLoading(true);
-      getConfigurationById(configId).then((config) => {
+      getConfigurationById(configId).then(({ config, errorMsg }) => {
         setConfiguration(config);
+        setErrorMsg(errorMsg);
         setConfigurationLoading(false);
       });
     }
@@ -126,6 +128,12 @@ const Board: FC = () => {
     setDetectedCycle(false);
   };
 
+  const [errorMsg, setErrorMsg] = useState<string>();
+
+  const closeApiErrorSnackbar = () => {
+    setErrorMsg(undefined);
+  };
+
   if (configurationLoading) {
     return (
       <Container
@@ -141,6 +149,7 @@ const Board: FC = () => {
       <Social onShare={share} onSaveCurrentGeneration={saveCurrentGeneration} onSaveSimulation={saveSimulation} />
 
       <CycleAlert detectedCycle={detectedCycle} closeCycleSnackbar={closeCycleSnackbar} />
+      <ApiErrorSnackbar errorMsg={errorMsg} closeApiErrorSnackbar={closeApiErrorSnackbar} />
 
       <Canvas
         generation={generations[generations.length - 1]}

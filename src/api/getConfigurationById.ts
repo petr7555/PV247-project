@@ -18,22 +18,25 @@ export const DEFAULT_CONFIGURATION: Configuration = {
   ],
 };
 
-const getConfigurationById = async (id: string): Promise<Configuration> => {
+const getConfigurationById = async (id: string) => {
   try {
     const docSnap = await getDoc(configurationDocument(id));
-    await new Promise((res, rej) => setTimeout(() => res(5), 2000));
-    // throw new Error('fail');
     if (docSnap.exists()) {
       const storedConfig = docSnap.data();
       return {
-        ...storedConfig,
-        initialGeneration: JSON.parse(storedConfig.initialGeneration),
+        config: {
+          ...storedConfig,
+          initialGeneration: JSON.parse(storedConfig.initialGeneration),
+        },
       };
     } else {
-      return DEFAULT_CONFIGURATION;
+      return { config: DEFAULT_CONFIGURATION, errorMsg: `Configuration with ID ${id} does not exist.` };
     }
   } catch (e) {
-    return DEFAULT_CONFIGURATION;
+    return {
+      config: DEFAULT_CONFIGURATION,
+      errorMsg: (e as { message?: string })?.message ?? 'An unknown error has occurred.',
+    };
   }
 };
 
