@@ -6,13 +6,14 @@ import useInterval from '../hooks/useInterval';
 import Generation from '../models/Generation';
 import ControlPanel from '../components/ControlPanel';
 import Social from '../components/Social';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import getConfigurationById, { DEFAULT_CONFIGURATION } from '../api/getConfigurationById';
 import { CircularProgress, Container } from '@mui/material';
 import useWindowWidth from '../utils/useWindowWidth';
 import generationsAreEqual from '../utils/generationsAreEqual';
 import CycleAlert from '../components/CycleAlert';
 import ApiErrorSnackbar from '../components/ApiErrorSnackbar';
+import useLoggedInUser from '../hooks/useLoggedInUser';
 
 const INITIAL_SIMULATION_DELAY = 100;
 
@@ -23,8 +24,10 @@ const getCurrentGenerationCoordinateSet = (generations: Generation[]) => {
 const Board: FC = () => {
   usePageTitle('Play');
   const windowWidth = useWindowWidth();
+  const user = useLoggedInUser();
 
   const { configId } = useParams();
+  const [searchParams] = useSearchParams();
 
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   const [configurationLoading, setConfigurationLoading] = useState(false);
@@ -32,13 +35,13 @@ const Board: FC = () => {
   useEffect(() => {
     if (configId) {
       setConfigurationLoading(true);
-      getConfigurationById(configId).then(({ config, errorMsg }) => {
+      getConfigurationById(configId, searchParams.get('private') === 'true', user).then(({ config, errorMsg }) => {
         setConfiguration(config);
         setErrorMsg(errorMsg);
         setConfigurationLoading(false);
       });
     }
-  }, [configId]);
+  }, [configId, searchParams, user]);
 
   const [generations, setGenerations] = useState([configuration.initialGeneration]);
 

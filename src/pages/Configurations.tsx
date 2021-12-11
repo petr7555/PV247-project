@@ -9,8 +9,6 @@ import PeopleIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
 import { ParsedConfiguration } from '../models/Configuration';
 
-// TODO add option to delete my configurations
-
 const filterConfigurations = (configurations: ParsedConfiguration[], searchTerm: string) => {
   const st = searchTerm.toLowerCase();
   return configurations.filter((config) => {
@@ -18,8 +16,10 @@ const filterConfigurations = (configurations: ParsedConfiguration[], searchTerm:
   });
 };
 
-const MY = 'MY';
-const PUBLIC = 'PUBLIC';
+const MY = 'MY' as const;
+const PUBLIC = 'PUBLIC' as const;
+
+type ShownConfigType = typeof MY | typeof PUBLIC;
 
 const Configurations: FC = () => {
   usePageTitle('Browse configurations');
@@ -27,9 +27,9 @@ const Configurations: FC = () => {
   const sharedConfigurations = useSharedConfigurations();
   const usersConfigurations = useUsersConfigurations();
 
-  const [shownConfigType, setShownConfigType] = useState(MY);
+  const [shownConfigType, setShownConfigType] = useState<ShownConfigType>(MY);
 
-  const changeShownConfigType = (event: MouseEvent<HTMLElement>, newShownConfigType: string) => {
+  const changeShownConfigType = (event: MouseEvent<HTMLElement>, newShownConfigType: ShownConfigType) => {
     setShownConfigType(newShownConfigType);
   };
 
@@ -83,7 +83,7 @@ const Configurations: FC = () => {
         <Grid container spacing={2}>
           {displayConfigurations.map((configuration) => (
             <Grid key={configuration.id} item xs={12} sm={6} md={4} lg={3}>
-              <ConfigurationPreview configuration={configuration} canDelete={shownConfigType === MY} />
+              <ConfigurationPreview configuration={configuration} isPrivate={shownConfigType === MY} />
             </Grid>
           ))}
         </Grid>

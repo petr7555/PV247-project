@@ -24,14 +24,14 @@ import { usersConfigurationDocument } from '../utils/firebase';
 
 type Props = {
   configuration: ParsedConfiguration;
-  canDelete?: boolean;
+  isPrivate?: boolean;
 };
 
-const ConfigurationPreview: FC<Props> = ({ configuration, canDelete = false }) => {
+const ConfigurationPreview: FC<Props> = ({ configuration, isPrivate = false }) => {
   const navigate = useNavigate();
 
   const openConfiguration = () => {
-    navigate(`/configurations/${configuration.id}`);
+    navigate(`/configurations/${configuration.id}?private=${isPrivate}`);
   };
 
   const user = useLoggedInUser();
@@ -56,7 +56,7 @@ const ConfigurationPreview: FC<Props> = ({ configuration, canDelete = false }) =
   return (
     <>
       <Dialog open={confirmationDialogOpen} onClose={closeConfirmationDialog}>
-        <DialogTitle>Are you sure?</DialogTitle>
+        <DialogTitle>Please confirm</DialogTitle>
         <DialogContent>
           <DialogContentText>Do you really want to delete this configuration?</DialogContentText>
         </DialogContent>
@@ -88,7 +88,7 @@ const ConfigurationPreview: FC<Props> = ({ configuration, canDelete = false }) =
             </CardContent>
           </Box>
         </CardActionArea>
-        {canDelete && (
+        {isPrivate && (
           <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <IconButton color="error" title="Delete" onClick={openConfirmationDialog}>
               <Delete />
