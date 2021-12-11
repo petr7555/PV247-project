@@ -7,14 +7,7 @@ import useUsersConfigurations from '../api/useUsersConfigurations';
 import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
-import { ParsedConfiguration } from '../models/Configuration';
-
-const filterConfigurations = (configurations: ParsedConfiguration[], searchTerm: string) => {
-  const st = searchTerm.toLowerCase();
-  return configurations.filter((config) => {
-    return config.name.toLowerCase().includes(st) || config.authorName.toLowerCase().includes(st);
-  });
-};
+import filterConfigurations from '../utils/filterConfigurations';
 
 const MY = 'MY' as const;
 const PUBLIC = 'PUBLIC' as const;
