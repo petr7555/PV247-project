@@ -1,58 +1,92 @@
-import React, { FC, useState } from 'react';
-import { Box, Button, Grid, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import React, { ChangeEvent, FC, MouseEvent, useState } from 'react';
+import { FormControl, Grid, OutlinedInput, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import usePageTitle from '../hooks/usePageTitle';
 import ConfigurationPreview from '../components/ConfigurationPreview';
 import useSharedConfigurations from '../api/useSharedConfigurations';
 import useUsersConfigurations from '../api/useUsersConfigurations';
 import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
+import SearchIcon from '@mui/icons-material/Search';
+import { ParsedConfiguration } from '../models/Configuration';
 
-// TODO maybe some filtering (by configuration name, author name,...)
 // TODO add option to delete my configurations
+
+const filterConfigurations = (configurations: ParsedConfiguration[], searchTerm: string) => {
+  const st = searchTerm.toLowerCase();
+  return configurations.filter((config) => {
+    return config.name.toLowerCase().includes(st) || config.authorName.toLowerCase().includes(st);
+  });
+};
+
+const MY = 'MY';
+const PUBLIC = 'PUBLIC';
 
 const Configurations: FC = () => {
   usePageTitle('Browse configurations');
   const sharedConfigurations = useSharedConfigurations();
   const usersConfigurations = useUsersConfigurations();
 
-  const [configurations, setConfigurations] = useState('myConfigurations');
+  const [shownConfigType, setShownConfigType] = useState(MY);
 
-  const handleChange = (event: React.MouseEvent<HTMLElement>, value: string) => {
-    setConfigurations(value);
+  const changeShownConfigType = (event: MouseEvent<HTMLElement>, newShownConfigType: string) => {
+    setShownConfigType(newShownConfigType);
   };
 
-  const displayConfigurations = configurations === 'myConfigurations' ? usersConfigurations : sharedConfigurations;
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const changeSearchTerm = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const displayConfigurations = filterConfigurations(
+    shownConfigType === MY ? usersConfigurations : sharedConfigurations,
+    searchTerm,
+  );
 
   return (
     <>
-      <Stack alignItems="center" sx={{ marginY: 3 }}>
-        <ToggleButtonGroup exclusive onChange={handleChange} sx={{ backgroundColor: 'main' }}>
-          <ToggleButton
-            value="myConfigurations"
-            aria-label="show my configurations"
-            selected={configurations === 'myConfigurations'}
-          >
-            <PersonIcon sx={{ marginRight: '8px', marginLeft: '-4px' }} />
-            My
-          </ToggleButton>
-          <ToggleButton
-            value="publicConfigurations"
-            aria-label="show public configurations"
-            selected={configurations === 'publicConfigurations'}
-          >
-            <PeopleIcon sx={{ marginRight: '8px', marginLeft: '-4px' }} />
-            Public
-          </ToggleButton>
+      <Stack alignItems="center" sx={{ marginY: 3 }} gap={2}>
+        <ToggleButtonGroup exclusive onChange={changeShownConfigType} sx={{ backgroundColor: 'main' }}>
+          {[
+            {
+              value: MY,
+              ariaLabel: 'show my configurations',
+              Icon: PersonIcon,
+            },
+            {
+              value: PUBLIC,
+              ariaLabel: 'show public configurations',
+              Icon: PeopleIcon,
+            },
+          ].map(({ value, ariaLabel, Icon }) => (
+            <ToggleButton key={value} value={value} aria-label={ariaLabel} selected={shownConfigType === value}>
+              <Icon sx={{ marginRight: '8px', marginLeft: '-4px' }} />
+              {value}
+            </ToggleButton>
+          ))}
         </ToggleButtonGroup>
+
+        <FormControl fullWidth>
+          <OutlinedInput
+            value={searchTerm}
+            onChange={changeSearchTerm}
+            startAdornment={<SearchIcon sx={{ marginRight: '8px' }} />}
+            placeholder="Search..."
+          />
+        </FormControl>
       </Stack>
 
-      <Grid container spacing={2}>
-        {displayConfigurations.map((configuration) => (
-          <Grid key={configuration.id} item xs={12} sm={6} md={4} lg={3}>
-            <ConfigurationPreview configuration={configuration} />
-          </Grid>
-        ))}
-      </Grid>
+      {displayConfigurations.length === 0 ? (
+        <Typography>No configurations found.</Typography>
+      ) : (
+        <Grid container spacing={2}>
+          {displayConfigurations.map((configuration) => (
+            <Grid key={configuration.id} item xs={12} sm={6} md={4} lg={3}>
+              <ConfigurationPreview configuration={configuration} />
+            </Grid>
+          ))}
+        </Grid>
+      )}
     </>
   );
 };

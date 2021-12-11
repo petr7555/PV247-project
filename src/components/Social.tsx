@@ -34,6 +34,9 @@ type Props = {
   boardSize: number;
 };
 
+const CURRENT_GENERATION = 'CURRENT_GENERATION';
+const WHOLE_SIMULATION = 'WHOLE_SIMULATION';
+
 const Social: FC<Props> = ({ generations, boardSize }) => {
   const isOffline = useOfflineStatus();
   const user = useLoggedInUser();
@@ -60,7 +63,7 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
 
   const handleSubmit = async ({ configName, saveType }: { configName: string; saveType: string }) => {
     setSaveDialogOpen(false);
-    if (saveType === 'currentGeneration') {
+    if (saveType === CURRENT_GENERATION) {
       await addConfigurationToUser(getCurrentGeneration(), boardSize, user, configName);
     } else {
       await addConfigurationToUser(getFirstGeneration(), boardSize, user, configName);
@@ -99,7 +102,7 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
       <Form
         initialValues={{
           configName: defaultConfigName,
-          saveType: 'currentGeneration',
+          saveType: CURRENT_GENERATION,
         }}
         onSubmit={handleSubmit}
         render={({ handleSubmit, form }) => (
@@ -118,8 +121,8 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
                 name="saveType"
                 required={true}
                 data={[
-                  { value: 'currentGeneration', label: 'Current generation' },
-                  { value: 'wholeSimulation', label: 'Whole simulation' },
+                  { value: CURRENT_GENERATION, label: 'Current generation' },
+                  { value: WHOLE_SIMULATION, label: 'Whole simulation' },
                 ]}
                 radioGroupProps={{ row: radioButtonsInRow, ['aria-label']: 'save type' }}
               />
@@ -127,7 +130,7 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
               <Typography component="h3">Preview:</Typography>
               <Canvas
                 generation={
-                  form.getFieldState('saveType')?.value === 'currentGeneration'
+                  form.getFieldState('saveType')?.value === CURRENT_GENERATION
                     ? getCurrentGeneration()
                     : getFirstGeneration()
                 }
