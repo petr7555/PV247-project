@@ -34,8 +34,12 @@ export const sharedConfigurationsCollection = collection(
   db,
   'configurations',
 ) as CollectionReference<StoredConfiguration>;
+
 export const configurationDocument = (id: string) =>
   doc(db, 'configurations', id) as DocumentReference<StoredConfiguration>;
 
 export const usersConfigurationsCollection = (id: string) =>
   collection(db, `users/${id}/configurations`) as CollectionReference<StoredConfiguration>;
+
+export const usersConfigurationDocument = (userId: string, configId: string) =>
+  doc(db, `users/${userId}/configurations`, configId) as DocumentReference<StoredConfiguration>;

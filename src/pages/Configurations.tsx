@@ -23,6 +23,7 @@ const PUBLIC = 'PUBLIC';
 
 const Configurations: FC = () => {
   usePageTitle('Browse configurations');
+
   const sharedConfigurations = useSharedConfigurations();
   const usersConfigurations = useUsersConfigurations();
 
@@ -82,7 +83,7 @@ const Configurations: FC = () => {
         <Grid container spacing={2}>
           {displayConfigurations.map((configuration) => (
             <Grid key={configuration.id} item xs={12} sm={6} md={4} lg={3}>
-              <ConfigurationPreview configuration={configuration} />
+              <ConfigurationPreview configuration={configuration} canDelete={shownConfigType === MY} />
             </Grid>
           ))}
         </Grid>

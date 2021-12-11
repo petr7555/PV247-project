@@ -1,18 +1,31 @@
 import { FC } from 'react';
-import { Box, Card, CardActionArea, CardContent, Typography } from '@mui/material';
+import { Box, Card, CardActionArea, CardActions, CardContent, IconButton, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Canvas from './Canvas';
 import { ParsedConfiguration } from '../models/Configuration';
+import { Delete } from '@mui/icons-material';
+import useLoggedInUser from '../hooks/useLoggedInUser';
+import { deleteDoc } from 'firebase/firestore';
+import { usersConfigurationDocument } from '../utils/firebase';
 
 type Props = {
   configuration: ParsedConfiguration;
+  canDelete?: boolean;
 };
 
-const ConfigurationPreview: FC<Props> = ({ configuration }) => {
+const ConfigurationPreview: FC<Props> = ({ configuration, canDelete = false }) => {
   const navigate = useNavigate();
 
   const openConfiguration = () => {
     navigate(`/configurations/${configuration.id}`);
+  };
+
+  const user = useLoggedInUser();
+
+  const deleteConfiguration = async () => {
+    if (user) {
+      await deleteDoc(usersConfigurationDocument(user.uid, configuration.id));
+    }
   };
 
   return (
@@ -34,6 +47,13 @@ const ConfigurationPreview: FC<Props> = ({ configuration }) => {
           </CardContent>
         </Box>
       </CardActionArea>
+      {canDelete && (
+        <CardActions>
+          <IconButton color="error" title="Delete" onClick={deleteConfiguration}>
+            <Delete />
+          </IconButton>
+        </CardActions>
+      )}
     </Card>
   );
 };
