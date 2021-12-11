@@ -16,6 +16,8 @@ import { Form } from 'react-final-form';
 import getUniqueName from '../utils/getUniqueName';
 import RequiredTextInput from './RequiredTextInput';
 import { Radios } from 'mui-rff';
+import useOfflineStatus from '../hooks/useOfflineStatus';
+import OfflineTooltip from './OfflineTooltip';
 
 const defaultConfigName = getUniqueName();
 
@@ -26,6 +28,8 @@ type Props = {
 };
 
 const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation }) => {
+  const isOffline = useOfflineStatus();
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [saveDialogIsOpen, setSaveDialogOpen] = useState(false);
   const [generatingShareLink, setGeneratingShareLink] = useState(false);
@@ -106,18 +110,23 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
           </Dialog>
         )}
       />
+
       <Stack direction="row" alignItems="center" gap={2} sx={{ marginY: 3 }}>
-        <Button
-          variant="contained"
-          endIcon={generatingShareLink ? <CircularProgress sx={{ color: 'grey.500' }} size={17} /> : <ShareIcon />}
-          onClick={handleShare}
-          disabled={generatingShareLink}
-        >
-          Share
-        </Button>
-        <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick}>
-          Save
-        </Button>
+        <OfflineTooltip>
+          <Button
+            variant="contained"
+            endIcon={generatingShareLink ? <CircularProgress sx={{ color: 'grey.500' }} size={17} /> : <ShareIcon />}
+            onClick={handleShare}
+            disabled={generatingShareLink || isOffline}
+          >
+            Share
+          </Button>
+        </OfflineTooltip>
+        <OfflineTooltip>
+          <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={isOffline}>
+            Save
+          </Button>
+        </OfflineTooltip>
       </Stack>
     </>
   );
