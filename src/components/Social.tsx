@@ -9,6 +9,9 @@ import {
   DialogTitle,
   Snackbar,
   Stack,
+  Tooltip,
+  Typography,
+  useMediaQuery,
 } from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import SaveIcon from '@mui/icons-material/Save';
@@ -18,17 +21,27 @@ import RequiredTextInput from './RequiredTextInput';
 import { Radios } from 'mui-rff';
 import useOfflineStatus from '../hooks/useOfflineStatus';
 import OfflineTooltip from './OfflineTooltip';
+import useLoggedInUser from '../hooks/useLoggedInUser';
+import Canvas from './Canvas';
+import addConfigurationToUser from '../api/addConfigurationToUser';
+import Generation from '../models/Generation';
+import getShareableLink from '../api/getShareableLink';
+import useError from '../hooks/useError';
 
 const defaultConfigName = getUniqueName();
 
 type Props = {
-  onShare: () => Promise<void>;
-  onSaveCurrentGeneration: (configName: string) => Promise<void>;
-  onSaveSimulation: (configName: string) => Promise<void>;
+  generations: Generation[];
+  boardSize: number;
 };
 
-const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation }) => {
+const CURRENT_GENERATION = 'CURRENT_GENERATION';
+const WHOLE_SIMULATION = 'WHOLE_SIMULATION';
+
+const Social: FC<Props> = ({ generations, boardSize }) => {
   const isOffline = useOfflineStatus();
+  const user = useLoggedInUser();
+  const [, setError] = useError();
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [saveDialogIsOpen, setSaveDialogOpen] = useState(false);
@@ -36,8 +49,13 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
 
   const handleShare = async () => {
     setGeneratingShareLink(true);
-    await onShare();
-    setSnackbarOpen(true);
+    const { link, errorMsg } = await getShareableLink(generations[0], boardSize, user);
+    if (errorMsg) {
+      setError(errorMsg);
+    } else if (link) {
+      await navigator.clipboard.writeText(link);
+      setSnackbarOpen(true);
+    }
     setGeneratingShareLink(false);
   };
 
@@ -45,17 +63,23 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
     setSaveDialogOpen(true);
   };
 
+  const getCurrentGeneration = () => generations.slice(-1)[0];
+
+  const getFirstGeneration = () => generations[0];
+
   const handleSubmit = async ({ configName, saveType }: { configName: string; saveType: string }) => {
     setSaveDialogOpen(false);
-    if (saveType === 'currentGeneration') {
-      await onSaveCurrentGeneration(configName);
-    } else {
-      await onSaveSimulation(configName);
+    const generation = saveType === CURRENT_GENERATION ? getCurrentGeneration() : getFirstGeneration();
+    const { errorMsg } = await addConfigurationToUser(generation, boardSize, user, configName);
+    if (errorMsg) {
+      setError(errorMsg);
     }
   };
 
   const closeSnackbar = () => setSnackbarOpen(false);
   const closeSaveDialog = () => setSaveDialogOpen(false);
+
+  const radioButtonsInRow = useMediaQuery('(min-width:768px)');
 
   return (
     <>
@@ -74,10 +98,10 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
       <Form
         initialValues={{
           configName: defaultConfigName,
-          saveType: 'currentGeneration',
+          saveType: CURRENT_GENERATION,
         }}
         onSubmit={handleSubmit}
-        render={({ handleSubmit }) => (
+        render={({ handleSubmit, form }) => (
           <Dialog open={saveDialogIsOpen} onClose={closeSaveDialog}>
             <DialogTitle>Save</DialogTitle>
             <DialogContent
@@ -85,7 +109,6 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
-                minWidth: 500,
               }}
             >
               <RequiredTextInput id="configName" label="Configuration name" sx={{ marginTop: 1 }} />
@@ -94,10 +117,21 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
                 name="saveType"
                 required={true}
                 data={[
-                  { value: 'currentGeneration', label: 'Current generation' },
-                  { value: 'wholeSimulation', label: 'Whole simulation' },
+                  { value: CURRENT_GENERATION, label: 'Current generation' },
+                  { value: WHOLE_SIMULATION, label: 'Whole simulation' },
                 ]}
-                radioGroupProps={{ row: true, ['aria-label']: 'save type' }}
+                radioGroupProps={{ row: radioButtonsInRow, ['aria-label']: 'save type' }}
+              />
+
+              <Typography component="h3">Preview:</Typography>
+              <Canvas
+                generation={
+                  form.getFieldState('saveType')?.value === CURRENT_GENERATION
+                    ? getCurrentGeneration()
+                    : getFirstGeneration()
+                }
+                boardSize={boardSize}
+                canvasWidth={250}
               />
             </DialogContent>
 
@@ -122,10 +156,21 @@ const Social: FC<Props> = ({ onShare, onSaveCurrentGeneration, onSaveSimulation 
             Share
           </Button>
         </OfflineTooltip>
+
         <OfflineTooltip>
-          <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={isOffline}>
-            Save
-          </Button>
+          {user ? (
+            <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={isOffline}>
+              Save
+            </Button>
+          ) : (
+            <Tooltip title="Log in to be able to save configurations.">
+              <span>
+                <Button variant="contained" endIcon={<SaveIcon />} onClick={onSaveButtonClick} disabled={true}>
+                  Save
+                </Button>
+              </span>
+            </Tooltip>
+          )}
         </OfflineTooltip>
       </Stack>
     </>

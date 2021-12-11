@@ -1,21 +1,20 @@
 import Generation from '../models/Generation';
 import { User } from 'firebase/auth';
 import { addDoc } from 'firebase/firestore';
-import { configurationsCollection } from '../utils/firebase';
-import { ConfigurationInput } from '../models/Configuration';
-import getUniqueName from '../utils/getUniqueName';
+import { sharedConfigurationsCollection } from '../utils/firebase';
+import createConfigurationInput from './utils/createConfigurationInput';
+import getErrorMessage from '../utils/getErrorMsg';
 
 const getShareableLink = async (generation: Generation, boardSize: number, user: User | undefined) => {
-  const authorName = user?.email?.split('@')[0] || 'Anonymous';
-  const newConfig: ConfigurationInput = {
-    name: getUniqueName(),
-    authorName,
-    createdAt: new Date(),
-    boardSize,
-    initialGeneration: JSON.stringify(generation),
-  };
-  const doc = await addDoc(configurationsCollection, newConfig);
-  return `${window.location.origin}/configurations/${doc.id}`;
+  const newConfig = createConfigurationInput(generation, boardSize, user);
+  try {
+    const doc = await addDoc(sharedConfigurationsCollection, newConfig);
+    return { link: `${window.location.origin}/configurations/${doc.id}` };
+  } catch (err) {
+    return {
+      errorMsg: getErrorMessage(err),
+    };
+  }
 };
 
 export default getShareableLink;

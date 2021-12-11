@@ -1,7 +1,8 @@
-import { configurationDocument } from '../utils/firebase';
-import { Configuration, ParsedConfiguration } from '../models/Configuration';
-import { useDocumentDataOnce } from 'react-firebase-hooks/firestore';
-import { FirestoreError, getDoc } from 'firebase/firestore';
+import { configurationDocument, usersConfigurationDocument } from '../utils/firebase';
+import { Configuration } from '../models/Configuration';
+import { getDoc } from 'firebase/firestore';
+import { User } from 'firebase/auth';
+import getErrorMessage from '../utils/getErrorMsg';
 
 export const DEFAULT_CONFIGURATION: Configuration = {
   boardSize: 20,
@@ -18,9 +19,20 @@ export const DEFAULT_CONFIGURATION: Configuration = {
   ],
 };
 
-const getConfigurationById = async (id: string) => {
+const getConfigurationById = async (configId: string, isPrivate: boolean, user: User | undefined) => {
   try {
-    const docSnap = await getDoc(configurationDocument(id));
+    let doc;
+
+    if (isPrivate) {
+      if (!user) {
+        return { config: DEFAULT_CONFIGURATION, errorMsg: 'You must be logged in to view this configuration.' };
+      }
+      doc = usersConfigurationDocument(user.uid, configId);
+    } else {
+      doc = configurationDocument(configId);
+    }
+    const docSnap = await getDoc(doc);
+
     if (docSnap.exists()) {
       const storedConfig = docSnap.data();
       return {
@@ -30,12 +42,12 @@ const getConfigurationById = async (id: string) => {
         },
       };
     } else {
-      return { config: DEFAULT_CONFIGURATION, errorMsg: `Configuration with ID ${id} does not exist.` };
+      return { config: DEFAULT_CONFIGURATION, errorMsg: `Configuration with ID ${configId} does not exist.` };
     }
-  } catch (e) {
+  } catch (err) {
     return {
       config: DEFAULT_CONFIGURATION,
-      errorMsg: (e as { message?: string })?.message ?? 'An unknown error has occurred.',
+      errorMsg: getErrorMessage(err),
     };
   }
 };

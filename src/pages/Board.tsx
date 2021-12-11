@@ -4,18 +4,17 @@ import usePageTitle from '../hooks/usePageTitle';
 import Canvas from '../components/Canvas';
 import useInterval from '../hooks/useInterval';
 import Generation from '../models/Generation';
-import getShareableLink from '../api/getShareableLink';
-import saveGeneration from '../api/saveGeneration';
 import ControlPanel from '../components/ControlPanel';
 import Social from '../components/Social';
-import useLoggedInUser from '../hooks/useLoggedInUser';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import getConfigurationById, { DEFAULT_CONFIGURATION } from '../api/getConfigurationById';
 import { CircularProgress, Container } from '@mui/material';
 import useWindowWidth from '../utils/useWindowWidth';
 import generationsAreEqual from '../utils/generationsAreEqual';
 import CycleAlert from '../components/CycleAlert';
 import ApiErrorSnackbar from '../components/ApiErrorSnackbar';
+import useLoggedInUser from '../hooks/useLoggedInUser';
+import useError from '../hooks/useError';
 
 const INITIAL_SIMULATION_DELAY = 100;
 
@@ -26,10 +25,11 @@ const getCurrentGenerationCoordinateSet = (generations: Generation[]) => {
 const Board: FC = () => {
   usePageTitle('Play');
   const windowWidth = useWindowWidth();
-
   const user = useLoggedInUser();
+  const [, setError] = useError();
 
   const { configId } = useParams();
+  const [searchParams] = useSearchParams();
 
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   const [configurationLoading, setConfigurationLoading] = useState(false);
@@ -37,13 +37,15 @@ const Board: FC = () => {
   useEffect(() => {
     if (configId) {
       setConfigurationLoading(true);
-      getConfigurationById(configId).then(({ config, errorMsg }) => {
+      getConfigurationById(configId, searchParams.get('private') === 'true', user).then(({ config, errorMsg }) => {
         setConfiguration(config);
-        setErrorMsg(errorMsg);
         setConfigurationLoading(false);
+        if (errorMsg) {
+          setError(errorMsg);
+        }
       });
     }
-  }, [configId]);
+  }, [configId, searchParams, setError, user]);
 
   const [generations, setGenerations] = useState([configuration.initialGeneration]);
 
@@ -100,21 +102,6 @@ const Board: FC = () => {
 
   const [boardSize, setBoardSize] = useState(configuration.boardSize);
 
-  const share = async () => {
-    const link = await getShareableLink(generations[0], boardSize, user);
-    await navigator.clipboard.writeText(link);
-  };
-
-  // TODO
-  const saveCurrentGeneration = async (configName: string) => {
-    saveGeneration(generations.slice(-1)[0], configName);
-  };
-
-  // TODO
-  const saveSimulation = async (configName: string) => {
-    saveGeneration(generations[0], configName);
-  };
-
   useEffect(() => {
     const lastGeneration = generations.slice(-1)[0];
     const prevGenerations = generations.slice(0, -1);
@@ -126,12 +113,6 @@ const Board: FC = () => {
 
   const closeCycleSnackbar = () => {
     setDetectedCycle(false);
-  };
-
-  const [errorMsg, setErrorMsg] = useState<string>();
-
-  const closeApiErrorSnackbar = () => {
-    setErrorMsg(undefined);
   };
 
   if (configurationLoading) {
@@ -146,10 +127,10 @@ const Board: FC = () => {
 
   return (
     <Container sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-      <Social onShare={share} onSaveCurrentGeneration={saveCurrentGeneration} onSaveSimulation={saveSimulation} />
+      <Social generations={generations} boardSize={boardSize} />
 
       <CycleAlert detectedCycle={detectedCycle} closeCycleSnackbar={closeCycleSnackbar} />
-      <ApiErrorSnackbar errorMsg={errorMsg} closeApiErrorSnackbar={closeApiErrorSnackbar} />
+      <ApiErrorSnackbar />
 
       <Canvas
         generation={generations[generations.length - 1]}
