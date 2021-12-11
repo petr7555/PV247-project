@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Stack, Typography } from '@mui/material';
+import { Button, Paper, Stack, Typography } from '@mui/material';
 import { FC, FormEvent, useState } from 'react';
 import GoogleIcon from '@mui/icons-material/Google';
 import { logIn } from '../utils/firebase';
