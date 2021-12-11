@@ -10,7 +10,7 @@ import ControlPanel from '../components/ControlPanel';
 import Social from '../components/Social';
 import useLoggedInUser from '../hooks/useLoggedInUser';
 import { useParams } from 'react-router-dom';
-import useConfigurationById from '../api/useConfigurationById';
+import getConfigurationById, { DEFAULT_CONFIGURATION } from '../api/getConfigurationById';
 import { CircularProgress, Container } from '@mui/material';
 import useWindowWidth from '../utils/useWindowWidth';
 import generationsAreEqual from '../utils/generationsAreEqual';
@@ -28,18 +28,27 @@ const Board: FC = () => {
 
   const user = useLoggedInUser();
 
-  // TODO avoid fetching when url does not contain configId
-  const { configId = '0' } = useParams();
+  const { configId } = useParams();
 
-  const [configuration, configurationLoading] = useConfigurationById(configId);
+  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
+  const [configurationLoading, setConfigurationLoading] = useState(false);
 
-  const [generations, setGenerations] = useState<Generation[]>([configuration.initialGeneration]);
+  useEffect(() => {
+    if (configId) {
+      setConfigurationLoading(true);
+      getConfigurationById(configId).then((config) => {
+        setConfiguration(config);
+        setConfigurationLoading(false);
+      });
+    }
+  }, [configId]);
+
+  const [generations, setGenerations] = useState([configuration.initialGeneration]);
 
   useEffect(() => {
     setGenerations([configuration.initialGeneration]);
     setBoardSize(configuration.boardSize);
-    // eslint-disable-next-line
-  }, [configurationLoading]);
+  }, [configuration]);
 
   const toggleCell = (coordinate: Coordinate) => {
     const cur = getCurrentGenerationCoordinateSet(generations);
