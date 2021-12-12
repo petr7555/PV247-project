@@ -3,7 +3,7 @@ import { StoredConfiguration } from '../models/Configuration';
 import useLoggedInUser from '../hooks/useLoggedInUser';
 import parseConfigurations from './utils/parseConfigurations';
 import { useEffect, useState } from 'react';
-import { onSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
+import { onSnapshot, orderBy, query, QueryDocumentSnapshot } from 'firebase/firestore';
 
 const useUsersConfigurations = () => {
   const user = useLoggedInUser();
@@ -11,9 +11,12 @@ const useUsersConfigurations = () => {
 
   useEffect(() => {
     if (user) {
-      const unsubscribe = onSnapshot(usersConfigurationsCollection(user.uid), (snapshot) => {
-        setConfigurations(snapshot.docs);
-      });
+      const unsubscribe = onSnapshot(
+        query(usersConfigurationsCollection(user.uid), orderBy('createdAt', 'desc')),
+        (snapshot) => {
+          setConfigurations(snapshot.docs);
+        },
+      );
       return () => {
         unsubscribe();
       };
