@@ -7,15 +7,17 @@ import getErrorMessage from '../utils/getErrorMsg';
 export const DEFAULT_CONFIGURATION: Configuration = {
   boardSize: 20,
   initialGeneration: [
-    [0, 0],
-    [5, 5],
-    [3, 3],
-    [9, 10],
-    [10, 10],
-    [11, 10],
-    [11, 9],
-    [10, 8],
-    [79, 6],
+    [20, 11],
+    [20, 12],
+    [20, 13],
+    [25, 12],
+    [26, 11],
+    [26, 12],
+    [26, 13],
+    [27, 11],
+    [27, 10],
+    [27, 13],
+    [27, 14],
   ],
 };
 
