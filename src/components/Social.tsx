@@ -35,8 +35,10 @@ type Props = {
   boardSize: number;
 };
 
-const CURRENT_GENERATION = 'CURRENT_GENERATION';
-const WHOLE_SIMULATION = 'WHOLE_SIMULATION';
+enum SaveType {
+  CURRENT_GENERATION = 'CURRENT_GENERATION',
+  WHOLE_SIMULATION = 'WHOLE_SIMULATION',
+}
 
 const Social: FC<Props> = ({ generations, boardSize }) => {
   const isOffline = useOfflineStatus();
@@ -69,7 +71,7 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
 
   const handleSubmit = async ({ configName, saveType }: { configName: string; saveType: string }) => {
     setSaveDialogOpen(false);
-    const generation = saveType === CURRENT_GENERATION ? getCurrentGeneration() : getFirstGeneration();
+    const generation = saveType === SaveType.CURRENT_GENERATION ? getCurrentGeneration() : getFirstGeneration();
     const { errorMsg } = await addConfigurationToUser(generation, boardSize, user, configName);
     if (errorMsg) {
       setError(errorMsg);
@@ -98,7 +100,7 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
       <Form
         initialValues={{
           configName: defaultConfigName,
-          saveType: CURRENT_GENERATION,
+          saveType: SaveType.CURRENT_GENERATION,
         }}
         onSubmit={handleSubmit}
         render={({ handleSubmit, form }) => (
@@ -117,8 +119,8 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
                 name="saveType"
                 required={true}
                 data={[
-                  { value: CURRENT_GENERATION, label: 'Current generation' },
-                  { value: WHOLE_SIMULATION, label: 'Whole simulation' },
+                  { value: SaveType.CURRENT_GENERATION, label: 'Current generation' },
+                  { value: SaveType.WHOLE_SIMULATION, label: 'Whole simulation' },
                 ]}
                 radioGroupProps={{ row: radioButtonsInRow, ['aria-label']: 'save type' }}
               />
@@ -126,7 +128,7 @@ const Social: FC<Props> = ({ generations, boardSize }) => {
               <Typography component="h3">Preview:</Typography>
               <Canvas
                 generation={
-                  form.getFieldState('saveType')?.value === CURRENT_GENERATION
+                  form.getFieldState('saveType')?.value === SaveType.CURRENT_GENERATION
                     ? getCurrentGeneration()
                     : getFirstGeneration()
                 }
